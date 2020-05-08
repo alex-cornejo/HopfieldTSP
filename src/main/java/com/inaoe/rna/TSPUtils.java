@@ -1,6 +1,5 @@
 package com.inaoe.rna;
 
-import org.apache.commons.math3.distribution.UniformIntegerDistribution;
 import org.apache.commons.math3.ml.distance.EuclideanDistance;
 import org.apache.commons.math3.random.RandomDataGenerator;
 import org.apache.commons.math3.util.Precision;
@@ -13,7 +12,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
-import java.util.stream.Stream;
 
 public class TSPUtils {
     public static List<double[]> generateInstance(int n) {

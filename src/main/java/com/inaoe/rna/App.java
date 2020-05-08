@@ -1,12 +1,9 @@
 package com.inaoe.rna;
 
-import com.inaoe.rna.utils.FileUtil;
 import com.inaoe.rna.utils.HopfieldUtils;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Random;
 
 /**
  * Hello world!
