@@ -16,7 +16,10 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
+import java.io.IOException;
 import java.net.URL;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -44,15 +47,32 @@ public class RootLayoutController implements Initializable {
     private Pane pOptimal;
 
     @FXML
-    private TextField tfK;
+    private TextField tfN;
 
     @FXML
-    private TextField tfOutliers;
+    private TextField tfA;
 
     @FXML
-    private GridPane gpDetails;
+    private TextField tfB;
 
-    private String instancePath;
+    @FXML
+    private TextField tfC;
+
+    @FXML
+    private TextField tfD;
+
+    @FXML
+    private TextField tfNPrime;
+
+    @FXML
+    private Label lTimeHopfield;
+
+    @FXML
+    private Label lTimeNearest;
+
+    @FXML
+    private Label lTimeOptimal;
+
     private final int paddingPane = 30;
     private final float radiusNode = 7;
     private List<double[]> coordinates;
@@ -61,6 +81,13 @@ public class RootLayoutController implements Initializable {
     private Canvas canvasHopfield;
     private Canvas canvasNearest;
     private Canvas canvasOptimal;
+    private Hopfield hopfield;
+    private double A;
+    private double B;
+    private double C;
+    private double D;
+    private int n;
+    private double nPrime;
 
     public void setStage(Stage stage) {
         this.stage = stage;
@@ -126,8 +153,8 @@ public class RootLayoutController implements Initializable {
 
     @FXML
     public void onActionbGenerate() {
-
-        coordinates = TSPUtils.generateInstance(10);
+        setParameters();
+        coordinates = TSPUtils.generateInstance(n);
 
         double xMin = coordinates.get(0)[0];
         double xMax = coordinates.get(0)[0];
@@ -160,31 +187,44 @@ public class RootLayoutController implements Initializable {
         drawNodesOptimal();
     }
 
+    private void setParameters() {
+        this.A = Double.parseDouble(tfA.getText());
+        this.B = Double.parseDouble(tfB.getText());
+        this.C = Double.parseDouble(tfC.getText());
+        this.D = Double.parseDouble(tfD.getText());
+        this.n = Integer.parseInt(tfN.getText());
+        this.nPrime = Double.parseDouble(tfNPrime.getText());
+    }
+
     @FXML
     public void onActionbComputeHopfield() {
         drawNodesHopfield();
-        int n = 10;
         var graph = TSPUtils.getAdjacencyMatrix(coordinates);
 
-        var tuple = HopfieldUtils.getDistanceBounds(graph);
-        var dL = (double)tuple[0];
-        var dU = (double)tuple[1];
+//        var tuple = HopfieldUtils.getDistanceBounds(graph);
+//        var dL = (double) tuple[0];
+//        var dU = (double) tuple[1];
+//        double C = 1;
+//        double D = 1 / dU;
+//        double B = 3 * dU + C;
+//        double A = B - D * dL;
+//        double nPrime = n + (3 * D * dU / C);
 
-
-        double C = 1;
-        double D = 1/dU;
-        double B = 3*dU+C;
-        double A = B-D*dL;
-        double nPrime = n+(3*D*dU/C);
-        var hopfield = new Hopfield(n, 1, graph);
+        hopfield = new Hopfield(n, graph);
         hopfield.setConstants(A, B, C, D, nPrime);
-        tuple = hopfield.start(2000);
+
+        Instant start = Instant.now();
+        var tuple = hopfield.start();
+        Instant finish = Instant.now();
+        long timeElapsed = Duration.between(start, finish).toMillis();
+
         int[] tour = (int[]) tuple[0];
         boolean isValid = (boolean) tuple[1];
         printTour(tour, canvasHopfield);
         var fitness = TSPUtils.fitnessFunction(graph, tour);
         lLengthHopfield.setText(String.format("Length: %.3f", fitness));
         lIsValid.setText("Valid: " + isValid);
+        lTimeHopfield.setText(String.format("Time: %d millis", timeElapsed));
     }
 
     @FXML
@@ -193,12 +233,16 @@ public class RootLayoutController implements Initializable {
 
         var graph = TSPUtils.getAdjacencyMatrix(coordinates);
 
+        Instant start = Instant.now();
         var tour = TSPUtils.nearestNeighbor(graph);
+        Instant finish = Instant.now();
+        long timeElapsed = Duration.between(start, finish).toMillis();
 
         printTour(tour, canvasNearest);
 
         var fitness = TSPUtils.fitnessFunction(graph, tour);
         lLengthNearest.setText(String.format("Length: %.3f", fitness));
+        lTimeNearest.setText(String.format("Time: %d millis", timeElapsed));
     }
 
     @FXML
@@ -207,12 +251,34 @@ public class RootLayoutController implements Initializable {
 
         var graph = TSPUtils.getAdjacencyMatrix(coordinates);
 
+        Instant start = Instant.now();
         var tour = TSPUtils.solveExact(graph);
+        Instant finish = Instant.now();
+        long timeElapsed = Duration.between(start, finish).toMillis();
 
         printTour(tour, canvasOptimal);
 
         var fitness = TSPUtils.fitnessFunction(graph, tour);
         lLengthOptimal.setText(String.format("Length: %.3f", fitness));
+        lTimeOptimal.setText(String.format("Time: %d millis", timeElapsed));
+    }
+
+    @FXML
+    public void onActionbComputeRandom() {
+        drawNodesOptimal();
+
+        var graph = TSPUtils.getAdjacencyMatrix(coordinates);
+
+        Instant start = Instant.now();
+        var tour = TSPUtils.randomTour(n);
+        Instant finish = Instant.now();
+        long timeElapsed = Duration.between(start, finish).toMillis();
+
+        printTour(tour, canvasOptimal);
+
+        var fitness = TSPUtils.fitnessFunction(graph, tour);
+        lLengthOptimal.setText(String.format("Length: %.3f", fitness));
+        lTimeOptimal.setText(String.format("Time: %d millis", timeElapsed));
     }
 
     private void printTour(int[] tour, Canvas canvas) {
@@ -224,5 +290,12 @@ public class RootLayoutController implements Initializable {
         }
         gc.strokeLine(coordsNorm.get(tour[i])[0] + radiusNode / 2, coordsNorm.get(tour[i])[1] + radiusNode / 2,
                 coordsNorm.get(tour[0])[0] + radiusNode / 2, coordsNorm.get(tour[0])[1] + radiusNode / 2);
+    }
+
+    @FXML
+    public void onActionbConvergence() throws IOException {
+        double[] convergence = hopfield.getEnergy().stream().mapToDouble(i -> i).toArray();
+        SineGraph frame = new SineGraph(convergence);
+        frame.setVisible(true);
     }
 }

@@ -1,19 +1,19 @@
 package com.inaoe.rna;
 
+import org.apache.commons.math3.distribution.UniformIntegerDistribution;
 import org.apache.commons.math3.ml.distance.EuclideanDistance;
-import org.jgrapht.Graph;
+import org.apache.commons.math3.random.RandomDataGenerator;
+import org.apache.commons.math3.util.Precision;
 import org.jgrapht.Graphs;
 import org.jgrapht.alg.tour.HeldKarpTSP;
-import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.DefaultWeightedEdge;
-import org.jgrapht.graph.SimpleGraph;
-import org.jgrapht.graph.SimpleWeightedGraph;
 import org.jgrapht.graph.builder.GraphTypeBuilder;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
+import java.util.stream.Stream;
 
 public class TSPUtils {
     public static List<double[]> generateInstance(int n) {
@@ -40,25 +40,21 @@ public class TSPUtils {
         return adjacencyMatrix;
     }
 
-//    public static boolean compare2dArrays(double[][] arr1, double[][]arr2){
-//        for (int i = 0; i < arr1.length; i++) {
-//            if(!Arrays.equals(arr1[i], arr2[i])){
-//                return false;
-//            }
-//        }
-//        return true;
-//    }
+    public static boolean verifyStability(double[][] arr1, double[][] arr2) {
+        int n = arr1.length;
+        int zerosCount = 0;
 
-    public static boolean compare2dArrays(double[][] arr1, double[][] arr2) {
-        double epsilon = 0.00001;
-        for (int i = 0; i < arr1.length; i++) {
-            for (int j = 0; j < arr1.length; j++) {
-                if (Math.abs(arr1[i][j] - arr2[i][j]) > epsilon) {
+        double epsilon = 1e-15;
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                if (Precision.equals(0, arr1[i][j], epsilon)) zerosCount++;
+
+                if (!Precision.equals(arr1[i][j], arr2[i][j], epsilon)) {
                     return false;
                 }
             }
         }
-        return true;
+        return zerosCount != n * n;
     }
 
     public static double fitnessFunction(double[][] D, int[] tour) {
@@ -121,7 +117,10 @@ public class TSPUtils {
         }
 
         var graphPath = tspSolver.getTour(graph);
-        int[] tour = Arrays.copyOfRange(graphPath.getVertexList().stream().mapToInt(i -> i).toArray(), 0, n);
-        return tour;
+        return Arrays.copyOfRange(graphPath.getVertexList().stream().mapToInt(i -> i).toArray(), 0, n);
+    }
+
+    public static int[] randomTour(int n) {
+        return new RandomDataGenerator().nextPermutation(n, n);
     }
 }
