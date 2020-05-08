@@ -12,3 +12,6 @@ NOTE: The executable jar will be located in to the /shade folder
 
 ### Excecute program
 `mvn clean compile exec:java`
+
+NOTE: Check this video for instructions.
+https://www.youtube.com/watch?v=lF_OIsjSycw
