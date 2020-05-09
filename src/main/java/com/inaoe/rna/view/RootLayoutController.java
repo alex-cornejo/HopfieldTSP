@@ -2,8 +2,7 @@
 package com.inaoe.rna.view;
 
 import com.inaoe.rna.Hopfield;
-import com.inaoe.rna.TSPUtils;
-import com.inaoe.rna.utils.FileUtil;
+import com.inaoe.rna.utils.TSPUtils;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.canvas.Canvas;
@@ -172,7 +171,7 @@ public class RootLayoutController implements Initializable {
                 yMax = coordinate[1];
             }
         }
-        coordsNorm = FileUtil.normNodes(coordinates, xMin, xMax, yMin, yMax,
+        coordsNorm = TSPUtils.normNodes(coordinates, xMin, xMax, yMin, yMax,
                 (int) pHopfield.getWidth() - paddingPane * 2, (int) pHopfield.getHeight() - paddingPane * 2);
 
         int h = (int) pHopfield.getHeight() - paddingPane;
@@ -198,15 +197,6 @@ public class RootLayoutController implements Initializable {
     public void onActionbComputeHopfield() {
         drawNodesHopfield();
         var graph = TSPUtils.getAdjacencyMatrix(coordinates);
-
-//        var tuple = HopfieldUtils.getDistanceBounds(graph);
-//        var dL = (double) tuple[0];
-//        var dU = (double) tuple[1];
-//        double C = 1;
-//        double D = 1 / dU;
-//        double B = 3 * dU + C;
-//        double A = B - D * dL;
-//        double nPrime = n + (3 * D * dU / C);
 
         hopfield = new Hopfield(n, graph);
         hopfield.setConstants(A, B, C, D, nPrime);

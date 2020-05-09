@@ -9,10 +9,6 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 
-/**
- *
- * @author engineer10
- */
 public class Main extends Application {
 
     private Stage primaryStage;

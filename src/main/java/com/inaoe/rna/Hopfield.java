@@ -1,5 +1,6 @@
 package com.inaoe.rna;
 
+import com.inaoe.rna.utils.TSPUtils;
 import lombok.Getter;
 
 import java.util.ArrayList;
@@ -41,13 +42,10 @@ public class Hopfield {
 
         double min = -0.1 * u0;
         double max = 0.1 * u0;
-//        double min = (-1.0/n) * u0;
-//        double max = (1.0/n) * u0;
         var rnd = new Random();
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
                 U[i][j] = u00 + (max - min) * rnd.nextDouble() + min;
-//                U[i][j] = rnd.nextDouble();
             }
         }
     }
@@ -89,25 +87,15 @@ public class Hopfield {
             updateOutputs(tmpV);
             energy.add(energyFunction(tmpV));
 
-//            System.out.println(energyFunction(tmpV));
-
             for (int x = 0; x < n; x++) {
                 for (int i = 0; i < n; i++) {
-                    var du = du(x, i);
-                    var added = du * delta;
-                    U[x][i] = U[x][i] + added;
-//                    U[x][i] = du;
+                    U[x][i] = U[x][i] +  du(x, i) * delta;
                 }
             }
             if (TSPUtils.verifyStability(V, tmpV)) {
-//                var tour = getTour(V);
-//                System.out.println(Arrays.toString(tour));
-//                System.out.println(isValid(tour));
                 break;
             }
             V = tmpV;
-//            System.out.println("Iteration: " + iter);
-//            printMatrix(V);
         }
         var tour = getTour(V);
         return new Object[]{tour, isValid(tour)};
@@ -124,8 +112,7 @@ public class Hopfield {
 
     public double outputNeuron(double uxi) {
         var tanh = Math.tanh(uxi / u0);
-        var result = 0.5 * (1 + tanh);
-        return result;
+        return 0.5 * (1 + tanh);
     }
 
     public double[][] getState() {
@@ -181,8 +168,6 @@ public class Hopfield {
         term5 = D * term5;
 
         return -term1 - term2 - term3 - term4 - term5;
-
-//        return - term2 - term3 - term4 - term5;
     }
 
     public int[] getTour(double[][] state) {
@@ -272,10 +257,6 @@ public class Hopfield {
             }
         }
         term4 = D / 2 * term4;
-//        System.out.println(term1);
-//        System.out.println(term2);
-//        System.out.println(term3);
-//        System.out.println(term4);
 
         return term1 + term2 + term3 + term4;
     }

@@ -9,15 +9,14 @@ import de.erichseifert.gral.ui.InteractivePanel;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 
 
 public class SineGraph extends JFrame {
 
     private static final long serialVersionUID = 1L;
 
-    public SineGraph(double[] x) throws FileNotFoundException, IOException {
+    public SineGraph(double[] x)  {
+
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setSize(600, 400);
         setLocationRelativeTo(null);
